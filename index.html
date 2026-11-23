@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MELEE — Ювелирный Дом</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-blush-50 text-charcoal flex flex-col min-h-screen">
+
+    <!-- ШАПКА САЙТА (HEADER) -->
+    <header class="sticky top-0 bg-white/90 backdrop-blur-md z-40 border-b border-blush-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+            <a href="index.html" class="font-serif-title text-3xl font-bold tracking-widest text-blush-900 uppercase">MELEE</a>
+            <nav class="hidden md:flex space-x-8 text-xs tracking-widest uppercase font-medium">
+                <a href="#catalog" onclick="toggleAdminView(false)" class="hover:text-blush-500 transition">Каталог</a>
+                <a href="#reviews" onclick="toggleAdminView(false)" class="hover:text-blush-500 transition">Отзывы</a>
+                <a href="about.html" class="hover:text-blush-500 transition">О бренде</a>
+                <a href="#contact" onclick="toggleAdminView(false)" class="hover:text-blush-500 transition">Контакты</a>
+                <a href="diagnostic.php" class="hover:text-blush-500 transition">Диагностика</a>
+            </nav>
+            <div class="flex items-center space-x-3 sm:space-x-4">
+                <!-- Кнопка перехода в админ-панель -->
+                <button type="button" id="toggle-admin-btn" onclick="toggleAdminView()" class="hidden flex items-center gap-2 bg-blush-900 hover:bg-blush-500 text-white text-xs px-3.5 py-2 rounded-full font-medium transition shadow-sm">
+                    <i class="fa-solid fa-user-shield"></i><span id="admin-btn-text" class="hidden sm:inline">Админ-панель</span>
+                </button>
+
+                <!-- Блок авторизации пользователя -->
+                <div id="user-auth-block"></div>
+
+                <!-- Кнопка корзины -->
+                <button type="button" id="cart-btn" class="relative text-charcoal hover:text-blush-500 transition">
+                    <i class="fa-solid fa-bag-shopping text-xl"></i>
+                    <span id="cart-count" class="absolute -top-2 -right-2 bg-blush-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+                </button>
+                <button type="button" id="mobile-menu-btn" class="md:hidden text-charcoal text-xl"><i class="fa-solid fa-bars"></i></button>
+            </div>
+        </div>
+        <!-- Мобильное меню -->
+        <div id="mobile-menu" class="hidden md:hidden border-t border-blush-100 bg-white px-4 py-3 space-y-2 text-xs tracking-widest uppercase">
+            <a href="#catalog" onclick="toggleAdminView(false)" class="block py-1 hover:text-blush-500">Каталог</a>
+            <a href="#reviews" onclick="toggleAdminView(false)" class="block py-1 hover:text-blush-500">Отзывы</a>
+            <a href="about.html" class="block py-1 hover:text-blush-500">О бренде</a>
+            <a href="#contact" onclick="toggleAdminView(false)" class="block py-1 hover:text-blush-500">Контакты</a>
+            <a href="diagnostic.php" class="block py-1 hover:text-blush-500">Диагностика</a>
+        </div>
+    </header>
+
+    <!-- ПАНЕЛЬ АДМИНИСТРАТОРА (ADMIN VIEW) -->
+    <div id="admin-view" class="hidden max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-grow w-full">
+        <div class="bg-white rounded-3xl border-2 border-blush-200 p-6 md:p-8 shadow-xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blush-500 via-blush-300 to-blush-900"></div>
+            <div class="flex flex-col md:flex-row md:items-center justify-between pb-6 mb-8 border-b border-blush-100 gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-2xl bg-blush-900 text-white flex items-center justify-center text-xl shadow-md"><i class="fa-solid fa-user-shield"></i></div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h1 class="font-serif-title text-2xl sm:text-3xl font-bold text-blush-900">Панель администратора</h1>
+                            <span class="bg-blush-100 text-blush-900 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-blush-200">Admin Mode</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-0.5">Управление заказами, каталогом, отзывами и аналитикой</p>
+                    </div>
+                </div>
+                <!-- Табы админки -->
+                <div class="flex flex-wrap items-center gap-2 bg-blush-50 p-1.5 rounded-2xl border border-blush-100">
+                    <button type="button" onclick="switchAdminTab('orders')" id="tab-orders-btn" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-blush-500 text-white shadow-sm transition">
+                        <i class="fa-solid fa-box"></i><span>Заказы</span><span id="admin-orders-count" class="bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
+                    </button>
+                    <button type="button" onclick="switchAdminTab('add-product')" id="tab-add-btn" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-charcoal hover:bg-white transition">
+                        <i class="fa-solid fa-plus"></i><span>Добавить товар</span>
+                    </button>
+                    <button type="button" onclick="switchAdminTab('stats')" id="tab-stats-btn" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-charcoal hover:bg-white transition">
+                        <i class="fa-solid fa-chart-pie"></i><span>Статистика</span>
+                    </button>
+                    <button type="button" onclick="switchAdminTab('reviews')" id="tab-reviews-btn" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-charcoal hover:bg-white transition">
+                        <i class="fa-solid fa-star"></i><span>Отзывы</span><span id="admin-reviews-count" class="bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
+                    </button>
+                    <button type="button" onclick="logoutAdmin()" class="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-red-500 hover:bg-red-50 transition ml-2">
+                        <i class="fa-solid fa-right-from-bracket"></i><span>Выход</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Вкладки админки -->
+            <div id="admin-tab-orders" class="space-y-4">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Список поступивших заказов</h3>
+                <div id="orders-list" class="space-y-4"></div>
+            </div>
+
+            <div id="admin-tab-add-product" class="hidden">
+                <div class="max-w-xl mx-auto bg-blush-50/50 p-6 sm:p-8 rounded-3xl border border-blush-200">
+                    <div class="flex items-center gap-3 mb-6 pb-4 border-b border-blush-200/60">
+                        <i class="fa-solid fa-gem text-blush-500 text-xl"></i><h3 class="font-serif-title text-xl font-bold text-blush-900">Новое украшение в каталог</h3>
+                    </div>
+                    <form id="add-product-form" onsubmit="handleCreateProduct(event)" class="space-y-4 text-xs">
+                        <div><label class="block mb-1.5 font-semibold text-charcoal">Название товара</label><input type="text" id="new-prod-name" placeholder="например, Кольцо с изумрудом" required class="w-full px-4 py-2.5 rounded-xl border border-blush-200 bg-white focus:outline-none focus:border-blush-500 shadow-sm"></div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block mb-1.5 font-semibold text-charcoal">Категория</label>
+                                <select id="new-prod-cat" class="w-full px-4 py-2.5 rounded-xl border border-blush-200 bg-white focus:outline-none focus:border-blush-500 shadow-sm">
+                                    <option value="rings">Кольца</option>
+                                    <option value="earrings">Серьги</option>
+                                    <option value="necklaces">Колье</option>
+                                    <option value="bracelets">Браслеты</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block mb-1.5 font-semibold text-charcoal">Материал</label>
+                                <select id="new-prod-mat" class="w-full px-4 py-2.5 rounded-xl border border-blush-200 bg-white focus:outline-none focus:border-blush-500 shadow-sm">
+                                    <option value="белое золото">Белое золото</option>
+                                    <option value="желтое золото">Желтое золото</option>
+                                    <option value="розовое золото">Розовое золото</option>
+                                    <option value="платина">Платина</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div><label class="block mb-1.5 font-semibold text-charcoal">Цена (₸)</label><input type="number" id="new-prod-price" placeholder="150000" required class="w-full px-4 py-2.5 rounded-xl border border-blush-200 bg-white focus:outline-none focus:border-blush-500 shadow-sm"></div>
+                            <div><label class="block mb-1.5 font-semibold text-charcoal">Вес (грамм)</label><input type="number" step="0.1" id="new-prod-weight" placeholder="3.5" required class="w-full px-4 py-2.5 rounded-xl border border-blush-200 bg-white focus:outline-none focus:border-blush-500 shadow-sm"></div>
+                        </div>
+                        <div><label class="block mb-1.5 font-semibold text-charcoal">Ссылка на фото (URL или path)</label><input type="text" id="new-prod-img" placeholder="images/item-13.jpg или https://..." required class="w-full px-4 py-2.5 rounded-xl border border-blush-200 bg-white focus:outline-none focus:border-blush-500 shadow-sm"></div>
+                        <div><label class="block mb-1.5 font-semibold text-charcoal">Описание</label><textarea id="new-prod-desc" rows="3" placeholder="Краткое описание товара..." required class="w-full px-4 py-2.5 rounded-xl border border-blush-200 bg-white focus:outline-none focus:border-blush-500 shadow-sm"></textarea></div>
+                        <button type="submit" class="w-full btn-soft bg-blush-500 hover:bg-blush-900 text-white font-medium py-3 rounded-xl transition text-xs uppercase tracking-wider shadow-md mt-2"><i class="fa-solid fa-cloud-arrow-up mr-2"></i> Опубликовать в каталог</button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="admin-tab-stats" class="hidden">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-blush-50/60 p-6 rounded-3xl border border-blush-200 flex items-center justify-between">
+                        <div><span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Всего заказов</span><div id="stat-orders-count" class="text-3xl font-bold text-blush-900 mt-1">0</div></div>
+                        <div class="w-12 h-12 rounded-2xl bg-white text-blush-500 flex items-center justify-center text-xl shadow-sm border border-blush-100"><i class="fa-solid fa-receipt"></i></div>
+                    </div>
+                    <div class="bg-blush-50/60 p-6 rounded-3xl border border-blush-200 flex items-center justify-between">
+                        <div><span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Общая выручка</span><div id="stat-total-revenue" class="text-3xl font-bold text-blush-900 mt-1">0 ₸</div></div>
+                        <div class="w-12 h-12 rounded-2xl bg-white text-emerald-600 flex items-center justify-center text-xl shadow-sm border border-blush-100"><i class="fa-solid fa-wallet"></i></div>
+                    </div>
+                    <div class="bg-blush-50/60 p-6 rounded-3xl border border-blush-200 flex items-center justify-between">
+                        <div><span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Средний чек</span><div id="stat-avg-order" class="text-3xl font-bold text-blush-900 mt-1">0 ₸</div></div>
+                        <div class="w-12 h-12 rounded-2xl bg-white text-amber-600 flex items-center justify-center text-xl shadow-sm border border-blush-100"><i class="fa-solid fa-scale-balanced"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="admin-tab-reviews" class="hidden space-y-4">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Модерация отзывов клиентов</h3>
+                <div id="admin-reviews-list" class="space-y-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- КЛИЕНТСКАЯ ЧАСТЬ -->
+    <div id="storefront-view" class="flex flex-col flex-grow">
+        <section class="relative bg-blush-100 py-16 md:py-24 mb-10 overflow-hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                <div class="max-w-xl text-center md:text-left space-y-4">
+                    <span class="text-xs tracking-widest uppercase font-semibold text-blush-500">Эксклюзивная коллекция</span>
+                    <h1 class="font-serif-title text-4xl sm:text-6xl font-bold text-blush-900 leading-tight">Сияние в каждой детали</h1>
+                    <p class="text-sm text-gray-600 font-light max-w-md mx-auto md:mx-0">Создаем современные украшения из драгоценных металлов и отборных камней для ваших самых важных моментов.</p>
+                    <a href="#catalog" class="inline-block bg-blush-500 hover:bg-blush-900 text-white text-xs tracking-widest uppercase px-8 py-3.5 rounded-full font-medium transition shadow-md">Смотреть каталог</a>
+                </div>
+                <div class="w-full md:w-1/2 max-w-md"><img src="https://stolychnashop.com.ua/upload/resize_cache/iblock/6c0/600_600_1/olsa1hn2gpjq7iiyi9ovx1k61rlunrnm.jpg__webp_original.webp" alt="Украшения MELEE" class="w-full h-full object-cover rounded-3xl shadow-lg"></div>
+            </div>
+        </section>
+
+        <!-- Каталог -->
+        <main id="catalog" class="max-w-7xl mx-auto px-4 sm:px-6 flex-grow pb-16 w-full">
+            <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 border-b border-blush-100 pb-6">
+                <div>
+                    <h2 class="font-serif-title text-3xl font-bold text-blush-900">Коллекция украшений</h2>
+                    <p class="text-xs text-gray-500 mt-1">Выберите идеальный акцент к вашему образу</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0">
+                        <button type="button" class="filter-cat-btn active bg-blush-500 text-white px-4 py-2 rounded-full text-xs font-medium uppercase tracking-wider transition shrink-0" data-category="all">Все</button>
+                        <button type="button" class="filter-cat-btn bg-white text-charcoal px-4 py-2 rounded-full text-xs font-medium uppercase tracking-wider transition shrink-0 border border-blush-100" data-category="rings">Кольца</button>
+                        <button type="button" class="filter-cat-btn bg-white text-charcoal px-4 py-2 rounded-full text-xs font-medium uppercase tracking-wider transition shrink-0 border border-blush-100" data-category="earrings">Серьги</button>
+                        <button type="button" class="filter-cat-btn bg-white text-charcoal px-4 py-2 rounded-full text-xs font-medium uppercase tracking-wider transition shrink-0 border border-blush-100" data-category="necklaces">Колье</button>
+                        <button type="button" class="filter-cat-btn bg-white text-charcoal px-4 py-2 rounded-full text-xs font-medium uppercase tracking-wider transition shrink-0 border border-blush-100" data-category="bracelets">Браслеты</button>
+                    </div>
+                    <select id="material-filter" class="bg-white border border-blush-200 text-xs rounded-full px-4 py-2 text-charcoal focus:outline-none">
+                        <option value="all">Все металлы</option>
+                        <option value="белое золото">Белое золото</option>
+                        <option value="желтое золото">Желтое золото</option>
+                        <option value="розовое золото">Розовое золото</option>
+                        <option value="платина">Платина</option>
+                    </select>
+                </div>
+            </div>
+            <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+        </main>
+
+        <!-- Отзывы -->
+        <section id="reviews" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-blush-100 w-full">
+            <h2 class="font-serif-title text-3xl font-bold text-blush-900 mb-6 text-center">Отзывы наших клиентов</h2>
+
+            <div class="bg-white rounded-3xl p-6 border border-blush-100 shadow-sm max-w-2xl mx-auto mb-8">
+                <h3 class="font-serif-title text-xl font-bold text-blush-900 mb-3">Оставить отзыв</h3>
+                <form onsubmit="handleCreateReview(event)" class="space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <input type="text" id="rev-author" placeholder="Ваше имя *" required class="p-3 text-xs border border-blush-200 rounded-xl w-full focus:outline-none focus:border-blush-500">
+                        <select id="rev-rating" class="p-3 text-xs border border-blush-200 rounded-xl w-full focus:outline-none focus:border-blush-500">
+                            <option value="5">★★★★★ (5/5)</option>
+                            <option value="4">★★★★☆ (4/5)</option>
+                            <option value="3">★★★☆☆ (3/5)</option>
+                            <option value="2">★★☆☆☆ (2/5)</option>
+                            <option value="1">★☆☆☆☆ (1/5)</option>
+                        </select>
+                    </div>
+                    <textarea id="rev-text" rows="3" placeholder="Напишите ваш отзыв..." required class="p-3 text-xs border border-blush-200 rounded-xl w-full focus:outline-none focus:border-blush-500"></textarea>
+                    <button type="submit" class="bg-blush-500 hover:bg-blush-900 text-white font-medium px-6 py-2.5 rounded-xl text-xs transition shadow-sm">Отправить отзыв</button>
+                </form>
+            </div>
+
+            <div id="reviews-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto"></div>
+        </section>
+    </div>
+
+    <!-- КОРЗИНА -->
+    <div id="cart-drawer" class="fixed inset-0 z-50 hidden">
+        <div id="cart-backdrop" class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="toggleCart(false)"></div>
+        <div class="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white p-6 flex flex-col justify-between shadow-2xl overflow-y-auto">
+            <div class="space-y-4">
+                <div class="flex items-center justify-between pb-4 border-b border-blush-100">
+                    <h3 class="font-serif-title text-2xl font-bold text-blush-900">Ваша корзина</h3>
+                    <button type="button" onclick="toggleCart(false)" class="text-gray-400 hover:text-charcoal"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <div id="cart-items" class="py-2 space-y-3 max-h-[40vh] overflow-y-auto"></div>
+                <div class="pt-4 border-t border-blush-100 space-y-3">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-blush-900">Данные для оформления</h4>
+                    <input type="text" id="cust-name" placeholder="Ваше имя *" required class="w-full px-3.5 py-2 rounded-xl border border-blush-200 text-xs focus:outline-none focus:border-blush-500">
+                    <input type="tel" id="cust-phone" placeholder="Телефон (+7 700 000 00 00) *" required class="w-full px-3.5 py-2 rounded-xl border border-blush-200 text-xs focus:outline-none focus:border-blush-500">
+                    <select id="cust-delivery" class="w-full px-3.5 py-2 rounded-xl border border-blush-200 text-xs focus:outline-none focus:border-blush-500">
+                        <option value="Доставка курьером">Доставка курьером (3 дня ожидания)</option>
+                        <option value="Самовывоз из салона">Самовывоз (г. Рудный, ул. Ленина 122)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="border-t border-blush-100 pt-4 space-y-4 mt-4">
+                <div class="flex justify-between items-center font-bold text-lg"><span>Итого:</span><span id="cart-total" class="text-blush-900">0 ₸</span></div>
+                <button type="button" onclick="checkoutCart()" class="w-full btn-soft bg-blush-500 hover:bg-blush-900 text-white font-medium py-3 rounded-2xl text-center text-sm shadow-md">Подтвердить и оформить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ВХОД ДЛЯ АДМИНА -->
+    <div id="admin-login-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeAdminLoginModal()"></div>
+        <div class="relative bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full z-10 space-y-4 shadow-2xl text-center">
+            <div class="w-12 h-12 rounded-2xl bg-blush-900 text-white flex items-center justify-center text-xl mx-auto shadow-md"><i class="fa-solid fa-lock"></i></div>
+            <h3 class="font-serif-title text-2xl font-bold text-blush-900">Вход для администратора</h3>
+            <p class="text-xs text-gray-500">Введите пароль доступа к панели управления</p>
+            <form onsubmit="handleAdminLogin(event)" class="space-y-3">
+                <input type="password" id="admin-pass-input" placeholder="Пароль доступа" required class="w-full px-4 py-2.5 rounded-xl border border-blush-200 text-xs text-center focus:outline-none focus:border-blush-500">
+                <button type="submit" class="w-full btn-soft bg-blush-900 hover:bg-blush-500 text-white font-medium py-2.5 rounded-xl text-xs uppercase tracking-wider shadow-md">Войти в систему</button>
+            </form>
+            <p class="text-[10px] text-gray-400 pt-2">Пароль по умолчанию: <code class="text-blush-900 font-bold">admin123</code></p>
+        </div>
+    </div>
+
+    <!-- АВТОРИЗАЦИЯ / РЕГИСТРАЦИЯ КЛИЕНТА (С АВТОЗАПОЛНЕНИЕМ) -->
+    <div id="user-auth-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeUserAuthModal()"></div>
+        <div class="relative bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full z-10 space-y-4 shadow-2xl">
+            <button type="button" onclick="closeUserAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-charcoal"><i class="fa-solid fa-xmark text-xl"></i></button>
+
+            <div class="flex border-b border-blush-100 text-center font-serif-title text-lg font-bold">
+                <button type="button" id="auth-tab-login" onclick="switchAuthTab('login')" class="w-1/2 pb-2 text-blush-900 border-b-2 border-blush-500">Вход</button>
+                <button type="button" id="auth-tab-register" onclick="switchAuthTab('register')" class="w-1/2 pb-2 text-gray-400">Регистрация</button>
+            </div>
+
+            <!-- Форма входа с autocomplete -->
+            <form id="login-form" onsubmit="handleUserLogin(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold mb-1">Email или телефон</label>
+                    <input type="text" id="login-email" name="username" autocomplete="username" placeholder="example@mail.com" required class="w-full px-4 py-2.5 rounded-xl border border-blush-200 focus:outline-none focus:border-blush-500">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Пароль</label>
+                    <input type="password" id="login-password" name="password" autocomplete="current-password" placeholder="••••••••" required class="w-full px-4 py-2.5 rounded-xl border border-blush-200 focus:outline-none focus:border-blush-500">
+                </div>
+                <button type="submit" class="w-full bg-blush-500 hover:bg-blush-900 text-white font-medium py-2.5 rounded-xl transition text-xs uppercase tracking-wider shadow-md">Войти</button>
+            </form>
+
+            <!-- Форма регистрации -->
+            <form id="register-form" onsubmit="handleUserRegister(event)" class="hidden space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold mb-1">Ваше имя</label>
+                    <input type="text" id="reg-name" placeholder="Алина" required class="w-full px-4 py-2.5 rounded-xl border border-blush-200 focus:outline-none focus:border-blush-500">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Телефон</label>
+                    <input type="tel" id="reg-phone" placeholder="+7 700 000 00 00" required class="w-full px-4 py-2.5 rounded-xl border border-blush-200 focus:outline-none focus:border-blush-500">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Email</label>
+                    <input type="email" id="reg-email" placeholder="example@mail.com" required class="w-full px-4 py-2.5 rounded-xl border border-blush-200 focus:outline-none focus:border-blush-500">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Пароль</label>
+                    <input type="password" id="reg-password" placeholder="Мин. 8 символов и цифра" required class="w-full px-4 py-2.5 rounded-xl border border-blush-200 focus:outline-none focus:border-blush-500">
+                    <p class="text-[10px] text-gray-400 mt-1">Не менее 8 символов, хотя бы одна цифра.</p>
+                </div>
+                <div class="flex items-center gap-2 pt-1">
+                    <input type="checkbox" id="reg-save-password" checked class="rounded border-blush-300 text-blush-500 focus:ring-blush-500">
+                    <label for="reg-save-password" class="text-[11px] text-gray-600">Запомнить логин и пароль</label>
+                </div>
+                <button type="submit" class="w-full bg-blush-500 hover:bg-blush-900 text-white font-medium py-2.5 rounded-xl transition text-xs uppercase tracking-wider shadow-md">Зарегистрироваться</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО ТОВАРА -->
+    <div id="product-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="relative bg-white rounded-3xl p-6 max-w-lg w-full z-10 space-y-4 shadow-2xl">
+            <button type="button" onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-charcoal"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <div id="modal-content" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="custom-toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 bg-charcoal text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-sm">
+        <i class="fa-solid fa-circle-check text-blush-300"></i><span id="toast-message"></span>
+    </div>
+
+<!-- Форма обратной связи -->
+        <section id="feedback" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-blush-100 w-full">
+            <h2 class="font-serif-title text-3xl font-bold text-blush-900 mb-6 text-center">Обратная связь</h2>
+            <div class="bg-white rounded-3xl p-6 border border-blush-100 shadow-sm max-w-2xl mx-auto">
+                <form action="process.php" method="POST" class="space-y-4 text-xs">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block font-semibold mb-1">Ваше имя *</label>
+                            <input type="text" name="name" placeholder="Алина" required class="p-3 border border-blush-200 rounded-xl w-full focus:outline-none focus:border-blush-500">
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1">Email *</label>
+                            <input type="email" name="email" placeholder="alina@example.com" required class="p-3 border border-blush-200 rounded-xl w-full focus:outline-none focus:border-blush-500">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Тема *</label>
+                        <input type="text" name="subject" placeholder="Вопрос по украшению или заказу" required class="p-3 border border-blush-200 rounded-xl w-full focus:outline-none focus:border-blush-500">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Сообщение *</label>
+                        <textarea name="message" rows="4" placeholder="Напишите ваше сообщение..." required class="p-3 border border-blush-200 rounded-xl w-full focus:outline-none focus:border-blush-500"></textarea>
+                    </div>
+                    <button type="submit" class="bg-blush-500 hover:bg-blush-900 text-white font-medium px-6 py-3 rounded-xl text-xs uppercase tracking-wider transition shadow-sm">Отправить сообщение</button>
+                </form>
+            </div>
+        </section>
+
+    <!-- ФУТЕР -->
+    <footer id="about" class="bg-blush-900 text-blush-100 py-12 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="space-y-3">
+                <h4 class="font-serif-title text-2xl font-bold tracking-widest text-white uppercase">MELEE</h4>
+                <p class="text-xs text-blush-200 leading-relaxed max-w-xs">Создаем идеальные украшения с 2024 года. Каждый элемент — это искусство ручной работы.</p>
+            </div>
+            <div id="contact" class="space-y-2 text-xs">
+                <h5 class="font-bold text-white uppercase tracking-wider mb-2">Контакты</h5>
+                <p><i class="fa-solid fa-location-dot mr-2"></i>Костанайская область, г. Рудный, ул. Ленина, 122</p>
+                <p><i class="fa-solid fa-phone mr-2"></i>+7 (700) 000-00-00</p>
+                <p><i class="fa-solid fa-envelope mr-2"></i>info@melee.kz</p>
+            </div>
+            <div class="space-y-2 text-xs">
+                <h5 class="font-bold text-white uppercase tracking-wider mb-2">Сервис и диагностика</h5>
+                <p><a href="about.html" class="hover:text-white transition underline">О бренде</a></p>
+                <p><a href="diagnostic.php" class="hover:text-white transition underline">Диагностика PHP</a></p>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-8 mt-8 border-t border-blush-800/50 text-center text-[10px] text-blush-300">© 2026 MELEE Jewelry. Все права защищены.</div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
