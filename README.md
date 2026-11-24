@@ -6,3 +6,5 @@
 1. Поместите проект в C:\xampp\htdocs\melee.
 2. Запустите Apache в XAMPP Control Panel.
 3. Откройте http://localhost/melee/ в браузере.
+
+Форма обратной связи сохраняет обращения в SQLite через process.php и messages.php.
